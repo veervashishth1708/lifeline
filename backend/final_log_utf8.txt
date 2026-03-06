@@ -1,0 +1,47 @@
+﻿py : INFO:     
+Started server 
+process [2408]
+At line:1 char:1
++ py -m uvicorn 
+app.main:app --port 
+8000 > 
+final_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~
+    + CategoryInfo  
+            : NotS  
+  pecified: (INFO   
+ :     Started s    
+erver process [    
+2408]:String) [    
+], RemoteExcept    
+ion
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+INFO:     Waiting 
+for application 
+startup.
+INFO:     
+Application startup 
+complete.
+ERROR:    [Errno 
+10048] error while 
+attempting to bind 
+on address 
+('127.0.0.1', 
+8000): only one 
+usage of each 
+socket address 
+(protocol/network 
+address/port) is 
+normally permitted
+INFO:     Waiting 
+for application 
+shutdown.
+INFO:     
+Application 
+shutdown complete.

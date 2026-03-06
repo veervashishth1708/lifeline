@@ -1,0 +1,8 @@
+{
+    "device_id": "test_device",
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "pulse": 80,
+    "sos": true,
+    "timestamp": "2026-03-03T23:58:00Z"
+}
