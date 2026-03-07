@@ -99,3 +99,17 @@
     --nav-item-active-color: #FFFFFF;
     --color-tower-marker: #FFFFFF;
 }
+/* Scaling for 7-inch displays and small laptops */
+@media (max-width: 1024px) or (max-height: 700px) {
+    :root {
+        --space-3: 10px;
+        --space-4: 12px;
+        --space-6: 18px;
+        --space-8: 24px;
+        
+        --sidebar-width-expanded: 260px;
+        --header-height: 56px;
+        --radius-lg: 10px;
+        --radius-xl: 16px;
+    }
+}

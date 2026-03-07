@@ -74,6 +74,12 @@
     box-shadow: var(--shadow-sm);
 }
 
+@media (max-width: 1024px) {
+    .search-bar {
+        width: 320px;
+    }
+}
+
 @media (max-width: 768px) {
     .search-header-container {
         top: 12px;

@@ -232,6 +232,24 @@
     color: var(--color-brand-green) !important;
 }
 
+@media (max-width: 1024px) {
+    .dispatch-panel {
+        width: 95%;
+        max-width: 700px;
+        padding: var(--space-4) var(--space-4);
+        bottom: 16px;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-3);
+    }
+
+    .panel-header-row {
+        margin-bottom: var(--space-4);
+    }
+}
+
 @media (max-width: 768px) {
     .dispatch-panel {
         bottom: 0;
