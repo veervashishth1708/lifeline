@@ -21,6 +21,9 @@ class Device(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     last_seen = Column(DateTime(timezone=True), onupdate=func.now())
     sos_active = Column(Boolean, default=False)
+    last_pulse = Column(Integer, nullable=True)
+    last_lat = Column(Float, nullable=True)
+    last_lng = Column(Float, nullable=True)
 
     owner = relationship("User", back_populates="devices")
     events = relationship("SOSEvent", back_populates="device")

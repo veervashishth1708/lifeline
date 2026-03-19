@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Battery, Signal, Info, X, RefreshCw } from 'lucide-react';
+import { Smartphone, Battery, Signal, Info, X, RefreshCw, Activity } from 'lucide-react';
 import { fetchDevicesStatus } from '../../services/api';
 import './DevicesPanel.css';
 import '../../styles/transitions.css';
 
-const DevicesPanel = ({ onClose }) => {
+const DevicesPanel = ({ onClose, deviceTelemetry = {} }) => {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,7 +30,10 @@ const DevicesPanel = ({ onClose }) => {
                     battery: '90%', // Default as backend doesn't store battery yet
                     status: device.sos_active ? 'SOS ACTIVE' : connectivityStatus,
                     signal: connectivityStatus === 'Online' ? 'Strong' : 'None',
-                    lastSeen: lastSeenDate ? lastSeenDate.toLocaleTimeString() : 'Never'
+                    lastSeen: lastSeenDate ? lastSeenDate.toLocaleTimeString() : 'Never',
+                    pulse: device.last_pulse || 0,
+                    lat: device.last_lat,
+                    lng: device.last_lng
                 };
             });
             setDevices(formattedDevices);
@@ -102,9 +105,13 @@ const DevicesPanel = ({ onClose }) => {
                             <div className="device-body">
                                 <div className="body-row">
                                     <span className="label">Last Heartbeat</span>
-                                    <span className="value">{device.lastSeen}</span>
+                                    <span className="value">{deviceTelemetry[device.id]?.timestamp ? new Date(deviceTelemetry[device.id].timestamp).toLocaleTimeString() : device.lastSeen}</span>
                                 </div>
                                 <div className="body-stats">
+                                    <div className="stat pulse-stat">
+                                        <Activity size={14} className="pulse-icon" />
+                                        <span className="pulse-value">{deviceTelemetry[device.id]?.pulse || device.pulse || '--'} BPM</span>
+                                    </div>
                                     <div className="stat">
                                         <Battery size={14} />
                                         <span>{device.battery}</span>

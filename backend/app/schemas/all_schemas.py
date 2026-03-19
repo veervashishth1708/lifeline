@@ -27,9 +27,15 @@ class TelemetryData(BaseModel):
     user_id: Optional[str] = None
     timestamp: Optional[datetime] = None # Make optional for robust hardware ingestion
 
+class EncryptedTelemetry(BaseModel):
+    encrypted_data: str # Base64 string from ESP32
+
 class DeviceStatus(BaseModel):
     id: str
     sos_active: bool
+    last_pulse: Optional[int]
+    last_lat: Optional[float]
+    last_lng: Optional[float]
     last_seen: Optional[datetime]
     class Config:
         from_attributes = True

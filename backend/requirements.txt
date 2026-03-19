@@ -12,3 +12,4 @@ redis==5.0.1
 python-dotenv==1.0.1
 python-multipart==0.0.9
 alembic==1.13.1
+pycryptodome==3.20.0

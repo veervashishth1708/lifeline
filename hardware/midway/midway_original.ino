@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <WiFi.h>
-#include <HTTPClient.h>
+#include <HTTPClient.h
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>

@@ -133,7 +133,7 @@ const MapContainer = ({
     zones = [],
     onAddZone
 }) => {
-    const CGCCenter = [30.683061, 76.605873]; // Centered on Node B region
+    const CGCCenter = [29.210347, 77.015948]; // Centered on Node B region
     const [isDrawingMode, setIsDrawingMode] = useState(false);
     const [selectedAlertId, setSelectedAlertId] = useState(null);
     const [activeRoute, setActiveRoute] = useState(null);
@@ -227,9 +227,9 @@ const MapContainer = ({
     };
 
     const INFRASTRUCTURE_NODES = [
-        { id: 'node-a', position: [30.680619, 76.605601], name: 'Node A' },
-        { id: 'node-b', position: [30.683061, 76.605873], name: 'Node B' },
-        { id: 'node-c', position: [30.683009, 76.608100], name: 'Node C' },
+        { id: 'node-a', position: [29.211372, 77.017304], name: 'Node A' },
+        { id: 'node-b', position: [29.210347, 77.015948], name: 'Node B' },
+        { id: 'node-c', position: [29.21141446472551, 77.01605426676902], name: 'Node C' },
         // Sukhna Wildlife Sanctuary Visual Nodes (Shifted to new demo coordinates)
         { id: 'sukhna-node-a', position: [30.755, 76.815], name: 'Sukhna Sanctuary - Node A', radius: 4700 },
         { id: 'sukhna-node-b', position: [30.751261, 76.952034], name: 'Sukhna Sanctuary - Node B (Demo)', radius: 4700 },

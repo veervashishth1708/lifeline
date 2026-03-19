@@ -11,7 +11,7 @@ const char *ssid = "Veer";
 const char *password = "veer1708";
 
 // Your PC's IP and Backend Port
-const char *backendURL = "http://10.185.3.46:8000/api/v1/telemetry";
+const char *backendURL = "http://10.124.177.46:8000/api/v1/telemetry";
 const char *deviceApiKey = "antigravity_secret_123";
 
 // n8n Webhook (Optional/Secondary)
@@ -69,9 +69,9 @@ struct NodeData {
   float lon;
 };
 
-NodeData nodes[] = {{"Node-A", 30.680619, 76.605601},
-                    {"Node-B", 30.683061, 76.605873},
-                    {"Node-C", 30.683009, 76.608100}};
+NodeData nodes[] = {{"Node-A", 29.211372, 77.017304},
+                    {"Node-B", 29.210347, 77.015948},
+                    {"Node-C", 29.21141446472551, 77.01605426676902}};
 
 void sendSOSToBackend(const char *nodeID, float lat, float lon,
                       bool isSOS = true, const char *userID = "") {

@@ -24,6 +24,7 @@ function App() {
   const [messageRecipient, setMessageRecipient] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [checkpoints, setCheckpoints] = useState([]); // New state for RFID notifications
+  const [deviceTelemetry, setDeviceTelemetry] = useState({}); // Track live pulse/lat/lng for all devices
 
   // ... rest of history stays the same ...
   const [history, setHistory] = useState([
@@ -94,6 +95,19 @@ function App() {
       if (data.type === 'sos_alert' || data.type === 'telemetry_update' || data.type === 'pulse_alert') {
         console.log("Triggering SOS/Telemetry Update UI...");
         setActiveTab('alerts');
+
+        // Update global telemetry state for real-time display in Devices/Active User sections
+        if (data.device_id) {
+          setDeviceTelemetry(prev => ({
+            ...prev,
+            [data.device_id]: {
+              pulse: data.pulse,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              timestamp: data.timestamp || new Date().toISOString()
+            }
+          }));
+        }
 
         setAlerts(prev => {
           // Identify unique SOS card by event_id or device_id fallback
@@ -192,7 +206,7 @@ function App() {
       case 'earthquake':
         return <EarthquakePrediction {...commonProps} />;
       case 'devices':
-        return <DevicesPanel {...commonProps} />;
+        return <DevicesPanel deviceTelemetry={deviceTelemetry} {...commonProps} />;
       case 'settings':
         return <SettingsPanel darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} {...commonProps} />;
       case 'users':

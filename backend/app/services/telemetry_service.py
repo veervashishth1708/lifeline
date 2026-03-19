@@ -25,6 +25,9 @@ class TelemetryService:
             db.refresh(device)
         
         device.last_seen = data.timestamp
+        device.last_pulse = data.pulse
+        device.last_lat = data.latitude
+        device.last_lng = data.longitude
         
         # 3. Store Pulse Data
         pulse_entry = PulseData(device_id=data.device_id, bpm=data.pulse, timestamp=data.timestamp)
