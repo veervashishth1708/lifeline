@@ -1,12 +1,15 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 
     PROJECT_NAME: str = "Life Link SOS Backend"
     API_V1_STR: str = "/api/v1"
-    DATABASE_URL: str = "sqlite:///./sql_app.db"
+    
+    # MongoDB Config
+    MONGODB_URL: str = "mongodb://localhost:27017" # default for fallback
+    MONGODB_NAME: str = "lifelink_sos"
+
     DEVICE_API_KEY: str = "change-me-device-key"
 
     SECRET_KEY: str = "change-me-secret"

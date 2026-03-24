@@ -1,20 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from motor.motor_asyncio import AsyncIOMotorClient
 from .config import settings
 
-is_sqlite = settings.DATABASE_URL.startswith("sqlite")
-engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False} if is_sqlite else {},
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+client = AsyncIOMotorClient(settings.MONGODB_URL)
+db = client[settings.MONGODB_NAME]
 
-Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    yield db

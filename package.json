@@ -4,8 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite --host\" \"cd backend && ..\\.venv\\Scripts\\python -m uvicorn app.main:app --reload --port 8000 --host 0.0.0.0\"",
-    "build": "vite build",
+    "dev": "concurrently \"vite --host\" \"cd backend && ..\\.venv\\Scripts\\python -m uvicorn app.main:app --reload --port 8000 --host 0.0.0.0\" \"cd backend_node && npm start\"""build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

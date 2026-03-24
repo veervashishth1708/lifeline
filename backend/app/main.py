@@ -1,11 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
-from .database import engine, Base
 from .routes import telemetry_routes, websocket_routes, sos_routes, auth_routes
-from .models import all_models
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,4 +24,4 @@ app.include_router(websocket_routes.router, tags=["websocket"])
 
 @app.get("/")
 async def root():
-    return {"message": "Life Link FastAPI backend is running", "api_prefix": settings.API_V1_STR}
+    return {"message": "Life Link FastAPI backend is running with MongoDB", "api_prefix": settings.API_V1_STR}

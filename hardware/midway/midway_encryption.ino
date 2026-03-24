@@ -12,9 +12,8 @@ const char *ssid = "Veer";
 const char *password = "veer1708";
 
 // Backend SECURE endpoint
-const char *backendURL = "http://10.124.177.46:8000/api/v1/telemetry/secure";
+const char *backendURL = "http://192.168.1.44:8000/api/v1/telemetry/secure";
 const char *deviceApiKey = "antigravity_secret_123";
-
 
 // ================= LoRa Pins =================
 #define LORA_SS 5
@@ -189,7 +188,6 @@ void loop() {
             delay(50);
           }
           digitalWrite(GREEN_LED, HIGH);
-
 
         } else if (response.indexOf("\"is_checkpoint\": true") > 0 ||
                    response.indexOf("\"is_checkpoint\":true") > 0 ||

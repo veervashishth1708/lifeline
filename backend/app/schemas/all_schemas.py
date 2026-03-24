@@ -21,7 +21,7 @@ class EncryptedTelemetry(BaseModel):
 class SOSActiveResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
+    id: str
     device_id: str
     is_active: bool
     started_at: datetime
