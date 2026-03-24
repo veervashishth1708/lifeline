@@ -1,11 +1,9 @@
-from sqlalchemy.orm import Session
-from ..models.all_models import Signal
 from ..schemas.all_schemas import TelemetryData
 from ..core.websocket_manager import manager
 
 class PulseService:
     @staticmethod
-    async def validate_pulse(db: Session, data: TelemetryData):
+    async def validate_pulse(db, data: TelemetryData):
         if data.pulse is None:
             return False
 
@@ -13,15 +11,13 @@ class PulseService:
         alert_type = "normal"
         reason = ""
 
-        last_reading = (
-            db.query(Signal)
-            .filter(Signal.device_id == data.device_id, Signal.pulse.is_not(None))
-            .order_by(Signal.received_at.desc())
-            .first()
+        last_reading = await db.signals.find_one(
+            {"device_id": data.device_id, "pulse": {"$ne": None}},
+            sort=[("received_at", -1)]
         )
 
-        if last_reading and last_reading.pulse is not None:
-            diff = abs(data.pulse - last_reading.pulse)
+        if last_reading and last_reading.get("pulse") is not None:
+            diff = abs(data.pulse - last_reading["pulse"])
             if diff > 20:
                 is_abnormal = True
                 alert_type = "critical"

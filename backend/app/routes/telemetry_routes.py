@@ -2,10 +2,8 @@ import json
 from datetime import datetime, timezone
 from typing import List
 from fastapi import APIRouter, Depends, Header, HTTPException
-from sqlalchemy.orm import Session
 from ..database import get_db
 from ..schemas.all_schemas import TelemetryData, DeviceStatus, EncryptedTelemetry
-from ..models.all_models import Signal, SOSEvent
 from ..services.telemetry_service import telemetry_service
 from ..config import settings
 from ..core.security import decrypt_aes_256_cbc_json
@@ -17,37 +15,51 @@ def verify_device_key(x_device_key: str = Header(..., alias="X-Device-Key")):
         raise HTTPException(status_code=401, detail="Invalid Device API Key")
 
 @router.get("/devices/status", response_model=List[DeviceStatus])
-def get_devices_status(db: Session = Depends(get_db)):
-    latest_per_device = {}
-    rows = db.query(Signal).order_by(Signal.received_at.desc()).limit(5000).all()
-    for row in rows:
-        if row.device_id not in latest_per_device:
-            latest_per_device[row.device_id] = row
-
+async def get_devices_status(db = Depends(get_db)):
+    # Aggregate to get the latest signal per device
+    pipeline = [
+        {"$sort": {"received_at": -1}},
+        {"$group": {
+            "_id": "$device_id",
+            "last_signal": {"$first": "$$ROOT"}
+        }}
+    ]
+    cursor = db.signals.aggregate(pipeline)
+    
     statuses = []
     now = datetime.now(timezone.utc)
-    for device_id, signal in latest_per_device.items():
-        active_event = (
-            db.query(SOSEvent)
-            .filter(SOSEvent.device_id == device_id, SOSEvent.is_active.is_(True))
-            .first()
-        )
-        delta = now - signal.received_at.replace(tzinfo=timezone.utc)
+    
+    async for doc in cursor:
+        device_id = doc["_id"]
+        signal = doc["last_signal"]
+        
+        # Check if there's an active SOS event for this device
+        active_event = await db.sos_events.find_one({
+            "device_id": device_id,
+            "is_active": True
+        })
+        
+        received_at = signal["received_at"]
+        if received_at.tzinfo is None:
+            received_at = received_at.replace(tzinfo=timezone.utc)
+            
+        delta = now - received_at
+        
         statuses.append(
             DeviceStatus(
                 device_id=device_id,
                 is_online=delta.total_seconds() <= 30,
-                last_seen=signal.received_at,
-                last_latitude=signal.latitude,
-                last_longitude=signal.longitude,
-                last_pulse=signal.pulse,
+                last_seen=received_at,
+                last_latitude=signal.get("latitude"),
+                last_longitude=signal.get("longitude"),
+                last_pulse=signal.get("pulse"),
                 sos_active=bool(active_event),
             )
         )
     return statuses
 
 @router.post("/telemetry/secure", dependencies=[Depends(verify_device_key)])
-async def post_secure_telemetry(payload: EncryptedTelemetry, db: Session = Depends(get_db)):
+async def post_secure_telemetry(payload: EncryptedTelemetry, db = Depends(get_db)):
     decrypted_json = decrypt_aes_256_cbc_json(payload.encrypted_data, aes_key=payload.aes_key)
     if decrypted_json is None:
         try:
@@ -62,6 +74,6 @@ async def post_secure_telemetry(payload: EncryptedTelemetry, db: Session = Depen
     return {"success": True, "event_id": ws_payload.get("event_id"), "stored_at": ws_payload["timestamp"]}
 
 @router.post("/telemetry", dependencies=[Depends(verify_device_key)])
-async def post_telemetry(data: TelemetryData, db: Session = Depends(get_db)):
+async def post_telemetry(data: TelemetryData, db = Depends(get_db)):
     ws_payload = await telemetry_service.process_telemetry(db, data)
     return {"success": True, "event_id": ws_payload.get("event_id"), "stored_at": ws_payload["timestamp"]}
