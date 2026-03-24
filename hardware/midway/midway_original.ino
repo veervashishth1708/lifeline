@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <WiFi.h>
-#include <HTTPClient.h
+#include <HTTPClient.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -9,7 +9,6 @@
 // ================= WIFI =================
 const char* ssid = "Veer";
 const char* password = "veer1708";
-const char* workflowURL = "https://zaidansari45.app.n8n.cloud/webhook/bc51e17f-1def-4354-b50f-9cd4f36f9abc";
 
 // ================= LoRa Pins =================
 #define LORA_SS   5
@@ -52,29 +51,6 @@ void connectWiFi() {
   display.println("WiFi Connected");
   display.display();
   delay(1000);
-}
-
-void triggerWorkflow() {
-
-  if (WiFi.status() == WL_CONNECTED) {
-
-    HTTPClient http;
-    http.begin(workflowURL);
-
-    int httpCode = http.GET();
-
-    Serial.print("HTTP Response Code: ");
-    Serial.println(httpCode);
-
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.println("Workflow Sent");
-    display.print("HTTP: ");
-    display.println(httpCode);
-    display.display();
-
-    http.end();
-  }
 }
 
 // =================================================
@@ -172,8 +148,7 @@ void loop() {
 
       digitalWrite(GREEN_LED, LOW);
 
-      // Trigger workflow
-      triggerWorkflow();
+
 
         // RED turns ON instantly
         digitalWrite(RED_LED, HIGH);

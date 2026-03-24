@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python backend artifacts
+__pycache__/
+*.pyc
+*.pyo
+backend/sql_app.db
+backend/*.db
+backend/debug_out*.txt

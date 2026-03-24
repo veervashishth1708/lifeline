@@ -199,12 +199,12 @@ const MapContainer = ({
         const selected = alerts.find(a => a.id === idToFocus);
 
         if (selected && !idToFocus?.toString().startsWith('team-')) {
-            getRoadDirections(AUTHORITY_CAMP_POS, selected.position);
+            getRoadDirections(SUKHNA_GATEWAY_POS, selected.position);
         } else if (!idToFocus && alerts.length > 0) {
             // Default to first SOS alert path if nothing selected
             const firstSOS = alerts.find(a => a.type === 'sos');
             if (firstSOS) {
-                getRoadDirections(AUTHORITY_CAMP_POS, firstSOS.position);
+                getRoadDirections(SUKHNA_GATEWAY_POS, firstSOS.position);
             }
         } else {
             setActiveRoute(null);
@@ -236,9 +236,7 @@ const MapContainer = ({
         { id: 'sukhna-node-c', position: [30.876469, 76.936252], name: 'Sukhna Sanctuary - Node C (Demo)', radius: 4700 }
     ];
 
-    const CONTROL_CENTER_POS = [30.685000, 76.607000]; // Nearby regional center
-    const SUKHNA_GATEWAY_POS = [30.80, 76.85]; // Optimized to intersect with Node A/B range
-    const AUTHORITY_CAMP_POS = [30.686536, 76.666651]; // Provided by user
+    const SUKHNA_GATEWAY_POS = [30.80, 76.85]; // Sukhna Wildlife Sanctuary (Midway)
 
     const handleMouseDown = useCallback((latlng) => {
         setDragStart(latlng);
@@ -323,22 +321,7 @@ const MapContainer = ({
 
                 <MapFollower selectedPos={selectedAlert?.position} />
 
-                {/* Infrastructure */}
-                <Circle
-                    center={CONTROL_CENTER_POS}
-                    radius={10000}
-                    pathOptions={{
-                        color: '#FF9933',
-                        weight: 2,
-                        opacity: 0.8,
-                        fillColor: '#FF9933',
-                        fillOpacity: 0.1
-                    }}
-                />
-                <Marker
-                    position={CONTROL_CENTER_POS}
-                    icon={createInfaIcon(monitorSvg, '#FF9933')}
-                />
+
 
                 {/* Sukhna Sanctuary Gateway */}
                 <Circle
@@ -357,22 +340,7 @@ const MapContainer = ({
                     icon={createInfaIcon(monitorSvg, '#E91E63')}
                 />
 
-                {/* Authority Camp */}
-                <Circle
-                    center={AUTHORITY_CAMP_POS}
-                    radius={300}
-                    pathOptions={{
-                        color: '#FFD700',
-                        weight: 3,
-                        opacity: 1,
-                        fillColor: '#FFD700',
-                        fillOpacity: 0.2
-                    }}
-                />
-                <Marker
-                    position={AUTHORITY_CAMP_POS}
-                    icon={createInfaIcon(shieldSvg, '#FFD700')}
-                />
+
 
                 {INFRASTRUCTURE_NODES.map(tower => (
                     <React.Fragment key={tower.id}>

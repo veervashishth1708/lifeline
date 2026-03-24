@@ -15,8 +15,6 @@ const char *password = "veer1708";
 const char *backendURL = "http://10.124.177.46:8000/api/v1/telemetry/secure";
 const char *deviceApiKey = "antigravity_secret_123";
 
-// n8n Webhook
-const char *workflowURL = "https://zaidansari45.app.n8n.cloud/webhook/bc51e17f-1def-4354-b50f-9cd4f36f9abc";
 
 // ================= LoRa Pins =================
 #define LORA_SS 5
@@ -60,26 +58,6 @@ void connectWiFi() {
   display.println(WiFi.localIP());
   display.display();
   delay(1000);
-}
-
-void triggerWorkflow() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(workflowURL);
-    int httpCode = http.GET();
-
-    Serial.print("n8n Workflow Response: ");
-    Serial.println(httpCode);
-
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("n8n Sent");
-    display.print("HTTP: ");
-    display.println(httpCode);
-    display.display();
-
-    http.end();
-  }
 }
 
 // =================================================
@@ -164,16 +142,19 @@ void loop() {
     size_t out_len;
     unsigned char b64_output[512];
     memset(b64_output, 0, sizeof(b64_output));
-    
-    mbedtls_base64_encode(b64_output, sizeof(b64_output), &out_len, buffer, len);
 
-    String securePayload = "{\"encrypted_data\":\"" + String((char *)b64_output) + "\"}";
+    mbedtls_base64_encode(b64_output, sizeof(b64_output), &out_len, buffer,
+                          len);
+
+    String securePayload =
+        "{\"encrypted_data\":\"" + String((char *)b64_output) + "\"}";
     Serial.print("Forwarding payload to backend: ");
     Serial.println(securePayload);
 
     display.clearDisplay();
     display.setCursor(0, 0);
-    display.println("Forwarding Payload");
+    display.println("sos recived");
+    display.println("forwarding to ...");
     display.display();
 
     if (WiFi.status() == WL_CONNECTED) {
@@ -188,33 +169,36 @@ void loop() {
         Serial.println("Backend Response: " + response);
 
         // Check if the backend detected an SOS
-        if (response.indexOf("\"is_sos\": true") > 0 || response.indexOf("\"is_sos\":true") > 0 || response.indexOf("\"is_sos\": True") > 0) {
-            display.clearDisplay();
-            display.setTextSize(2);
-            display.setCursor(0, 10);
-            display.println("SOS ALERT!");
-            display.setTextSize(1);
-            display.display();
+        if (response.indexOf("\"is_sos\": true") > 0 ||
+            response.indexOf("\"is_sos\":true") > 0 ||
+            response.indexOf("\"is_sos\": True") > 0) {
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setCursor(0, 10);
+          display.println("SOS ALERT!");
+          display.setTextSize(1);
+          display.display();
 
-            digitalWrite(GREEN_LED, LOW);
-            triggerWorkflow();
+          digitalWrite(GREEN_LED, LOW);
 
+          // Fast blinking for 3 seconds (30 loops of 100ms)
+          for (int i = 0; i < 30; i++) {
             digitalWrite(RED_LED, HIGH);
-            for (int i = 0; i < 10; i++) {
-                digitalWrite(RED_LED, LOW);
-                delay(120);
-                digitalWrite(RED_LED, HIGH);
-                delay(120);
-            }
+            delay(50);
             digitalWrite(RED_LED, LOW);
-            digitalWrite(GREEN_LED, HIGH);
-        } 
-        else if (response.indexOf("\"is_checkpoint\": true") > 0 || response.indexOf("\"is_checkpoint\":true") > 0 || response.indexOf("\"is_checkpoint\": True") > 0) {
-            display.clearDisplay();
-            display.setCursor(0, 10);
-            display.println("CHECKPOINT OK");
-            display.display();
-            delay(2000);
+            delay(50);
+          }
+          digitalWrite(GREEN_LED, HIGH);
+
+
+        } else if (response.indexOf("\"is_checkpoint\": true") > 0 ||
+                   response.indexOf("\"is_checkpoint\":true") > 0 ||
+                   response.indexOf("\"is_checkpoint\": True") > 0) {
+          display.clearDisplay();
+          display.setCursor(0, 10);
+          display.println("CHECKPOINT OK");
+          display.display();
+          delay(2000);
         }
       } else {
         Serial.print("HTTP Error: ");

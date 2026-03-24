@@ -26,8 +26,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // ================= CONSTANTS =================
 const char *DEVICE_ID = "Wristband-01";
-const float FIXED_LAT = 30.681440;
-const float FIXED_LNG = 76.605400;
+const float FIXED_LAT = 29.211000;
+const float FIXED_LNG = 77.016500;
 
 // ================= STATE VARIABLES =================
 bool sosActive = false;

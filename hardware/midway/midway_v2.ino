@@ -14,9 +14,6 @@ const char *password = "veer1708";
 const char *backendURL = "http://10.124.177.46:8000/api/v1/telemetry";
 const char *deviceApiKey = "antigravity_secret_123";
 
-// n8n Webhook (Optional/Secondary)
-const char *workflowURL = "https://zaidansari45.app.n8n.cloud/webhook/"
-                          "bc51e17f-1def-4354-b50f-9cd4f36f9abc";
 
 // ================= LoRa Pins =================
 #define LORA_SS 5
@@ -119,26 +116,6 @@ void sendSOSToBackend(const char *nodeID, float lat, float lon,
   }
 }
 
-void triggerN8NWorkflow() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(workflowURL);
-    int httpCode = http.GET();
-
-    Serial.print("n8n Workflow Response: ");
-    Serial.println(httpCode);
-
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("n8n Sent");
-    display.print("HTTP: ");
-    display.println(httpCode);
-    display.display();
-
-    http.end();
-  }
-}
-
 // =================================================
 
 void setup() {
@@ -234,8 +211,8 @@ void loop() {
       Serial.println(nodeID);
 
       // Find node coordinates
-      float lat = 30.6862;
-      float lon = 76.6619;
+      float lat = 30.8000;
+      float lon = 76.8500;
       for (int i = 0; i < 3; i++) {
         if (nodeID == nodes[i].id) {
           lat = nodes[i].lat;
@@ -264,8 +241,8 @@ void loop() {
     // 2. Handle SOS Packets
     // Default to midway panel if generic SOS or unknown ID
     const char *targetID = "midway_panel";
-    float targetLat = 30.6862;
-    float targetLon = 76.6619;
+    float targetLat = 30.8000;
+    float targetLon = 76.8500;
     bool foundNode = false;
 
     // Check if incoming matches any Node ID (e.g., "Node-B")
@@ -297,8 +274,7 @@ void loop() {
       // 1. Trigger Local Webpage Backend with Dynamic Coords
       sendSOSToBackend(targetID, targetLat, targetLon, true);
 
-      // 2. Trigger n8n (Optional)
-      triggerN8NWorkflow();
+
 
       // Mechanical Alarm Feedback
       digitalWrite(RED_LED, HIGH);

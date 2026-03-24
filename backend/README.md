@@ -1,20 +1,60 @@
-# Initial Backend Implementation Documentation
+# FastAPI Backend (Frontend-Compatible)
 
-## Project Structure
-The backend is organized as follows:
-- `app/main.py`: Application entry point.
-- `app/models/`: Database models (SQLAlchemy).
-- `app/schemas/`: Data validation (Pydantic).
-- `app/routes/`: API & WebSocket endpoints.
-- `app/services/`: Business logic (SOS, Pulse, Telemetry).
-- `app/core/`: Central managers (WebSockets).
+This backend is built to work with the current frontend without UI changes.
 
-## Setup Instructions
-1. Install dependencies: `pip install -r requirements.txt`
-2. Configure `.env` based on `.env.example`.
-3. Run with uvicorn: `uvicorn app.main:app --reload`
-4. Or use Docker: `docker-compose up --build`
+## Run
 
-## Real-Time updates
-- Use WebSocket at `/ws/sos` for global alerts.
-- Use WebSocket at `/ws/telemetry/{device_id}` for specific device tracking.
+1. Create/activate virtual env.
+2. Install deps:
+   - `pip install -r requirements.txt`
+3. Copy env:
+   - `.env.example` -> `.env`
+4. Start server:
+   - `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+
+## Main Endpoints
+
+- `POST /api/v1/telemetry` (hardware ingest)
+- `POST /api/v1/telemetry/secure` (optional secure ingest)
+- `GET /api/v1/sos/active`
+- `POST /api/v1/sos/resolve/{event_id}`
+- `GET /api/v1/devices/status`
+- `POST /api/v1/login`
+- `WS /ws/sos`
+
+## Hardware Ingest Example
+
+Headers:
+- `X-Device-Key: <DEVICE_API_KEY>`
+
+Body:
+
+```json
+{
+  "device_id": "wrist_001",
+  "latitude": 28.6139,
+  "longitude": 77.209,
+  "pulse": 92,
+  "battery": 84,
+  "sos": true
+}
+```
+
+## Notes
+
+- SQLite is used by default (`sql_app.db`).
+- Sending updates every 5 seconds is supported.
+- WebSocket events are pushed to `/ws/sos` for real-time map updates.
+
+## Quick Hardware Monitor (Terminal)
+
+To watch incoming signals live in terminal:
+
+- `python tools/live_signal_watch.py`
+
+It prints:
+- `device_id`
+- `latitude`, `longitude`
+- `pulse`
+- `sos`
+- `received_at`

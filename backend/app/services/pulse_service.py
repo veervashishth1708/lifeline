@@ -1,35 +1,32 @@
 from sqlalchemy.orm import Session
-from ..models.all_models import PulseData, Device
+from ..models.all_models import Signal
 from ..schemas.all_schemas import TelemetryData
 from ..core.websocket_manager import manager
-from ..services.n8n_service import n8n_service
-import asyncio
 
 class PulseService:
     @staticmethod
     async def validate_pulse(db: Session, data: TelemetryData):
-        """
-        Logic to check for abnormal pulse:
-        - Range: 60-100 BPM
-        - Fluctuation check: Sudden jump > 20 BPM from last reading
-        """
+        if data.pulse is None:
+            return False
+
         is_abnormal = False
         alert_type = "normal"
         reason = ""
 
-        # 1. Check for sudden jump
-        last_reading = db.query(PulseData).filter(
-            PulseData.device_id == data.device_id
-        ).order_by(PulseData.timestamp.desc()).offset(1).first()
+        last_reading = (
+            db.query(Signal)
+            .filter(Signal.device_id == data.device_id, Signal.pulse.is_not(None))
+            .order_by(Signal.received_at.desc())
+            .first()
+        )
 
-        if last_reading:
-            diff = abs(data.pulse - last_reading.bpm)
+        if last_reading and last_reading.pulse is not None:
+            diff = abs(data.pulse - last_reading.pulse)
             if diff > 20:
                 is_abnormal = True
                 alert_type = "critical"
                 reason = f"Critical Pulse Fluctuation (+{diff} BPM)"
 
-        # 2. Check absolute ranges
         if not is_abnormal:
             if data.pulse > 100:
                 is_abnormal = True
@@ -48,18 +45,8 @@ class PulseService:
                 "pulse": data.pulse,
                 "alert_level": alert_type,
                 "reason": reason,
-                "timestamp": data.timestamp.isoformat()
+                "timestamp": (data.timestamp.isoformat() if data.timestamp else None)
             })
-            
-            # If critical, also trigger n8n
-            if alert_type == "critical":
-                asyncio.create_task(n8n_service.trigger_sos_webhook({
-                    "device_id": data.device_id,
-                    "location": None, # Will be filled by caller or fetched
-                    "pulse": data.pulse,
-                    "timestamp": data.timestamp.isoformat(),
-                    "severity_level": "critical_pulse"
-                }))
             
         return is_abnormal
 

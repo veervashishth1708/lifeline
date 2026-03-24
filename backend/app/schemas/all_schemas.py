@@ -1,61 +1,39 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional
 
-# Auth Schemas
-class UserBase(BaseModel):
-    name: str
-    email: EmailStr
-
-class UserCreate(UserBase):
-    password: str
-
-class User(UserBase):
-    id: int
-    role: str
-    class Config:
-        from_attributes = True
-
-# Device & Telemetry Schemas
 class TelemetryData(BaseModel):
-    device_id: str
-    latitude: float
-    longitude: float
-    pulse: int
-    sos: bool
-    is_checkpoint: Optional[bool] = False
-    user_id: Optional[str] = None
-    timestamp: Optional[datetime] = None # Make optional for robust hardware ingestion
+    device_id: str = Field(min_length=1)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    pulse: Optional[int] = None
+    battery: Optional[int] = Field(default=None, ge=0, le=100)
+    sos: bool = False
+    timestamp: Optional[datetime] = None
+
 
 class EncryptedTelemetry(BaseModel):
-    encrypted_data: str # Base64 string from ESP32
+    encrypted_data: str
+    device_id: Optional[str] = None
+    aes_key: Optional[str] = None
 
-class DeviceStatus(BaseModel):
-    id: str
-    sos_active: bool
-    last_pulse: Optional[int]
-    last_lat: Optional[float]
-    last_lng: Optional[float]
-    last_seen: Optional[datetime]
-    class Config:
-        from_attributes = True
 
-# SOS Event Schemas
-class SOSRequest(BaseModel):
-    device_id: str
+class SOSActiveResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
-class SOSEventSchema(BaseModel):
     id: int
     device_id: str
-    start_time: datetime
-    end_time: Optional[datetime]
-    status: str
-    class Config:
-        from_attributes = True
+    is_active: bool
+    started_at: datetime
+    pulse_data: list[dict]
+    location_data: list[dict]
 
-# Pulse & Location History
-class PulseHistory(BaseModel):
-    bpm: int
-    timestamp: datetime
-    class Config:
-        from_attributes = True
+
+class DeviceStatus(BaseModel):
+    device_id: str
+    is_online: bool
+    last_seen: Optional[datetime] = None
+    last_latitude: Optional[float] = None
+    last_longitude: Optional[float] = None
+    last_pulse: Optional[int] = None
+    sos_active: bool

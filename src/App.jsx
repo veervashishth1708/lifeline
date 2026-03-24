@@ -12,26 +12,28 @@ import SettingsPanel from './components/Settings/SettingsPanel'
 import UsersPanel from './components/Users/UsersPanel'
 import './App.css'
 
-import { fetchActiveSOS } from './services/api'
-import { connectSOSWebSocket } from './services/websocket'
+import { useSOSData } from './hooks/useSOSData'
 
 function App() {
   const [activeTab, setActiveTab] = useState('alerts');
   const [darkMode, setDarkMode] = useState(true);
-  const [selectedAlertId, setSelectedAlertId] = useState(null);
   const [zones, setZones] = useState([]);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState(null);
-  const [alerts, setAlerts] = useState([]);
-  const [checkpoints, setCheckpoints] = useState([]); // New state for RFID notifications
-  const [deviceTelemetry, setDeviceTelemetry] = useState({}); // Track live pulse/lat/lng for all devices
 
-  // ... rest of history stays the same ...
+  const {
+    alerts,
+    setAlerts,
+    checkpoints,
+    deviceTelemetry,
+    selectedAlertId,
+    setSelectedAlertId
+  } = useSOSData();
+
+  // History data for side panel display metrics
   const [history, setHistory] = useState([
     { id: 101, user: 'Sanjay Dutt', avatar: '/avatars/male_1.png', location: 'Dhela Range', time: '10:15 AM', responseTime: '12 min', status: 'RESOLVED' },
     { id: 102, user: 'Priya Rai', avatar: '/avatars/female_1.png', location: 'Garjiya Gate', time: '09:30 AM', responseTime: '18 min', status: 'RESOLVED' },
-    { id: 103, user: 'Karan Johar', avatar: '/avatars/male_2.png', location: 'Sitabani Buffer', time: 'Yesterday', responseTime: '24 min', status: 'RESOLVED' },
-    { id: 104, user: 'Aditi Rao', avatar: '/avatars/female_2.png', location: 'Bijrani Range', time: '2 hours ago', responseTime: '15 min', status: 'RESOLVED' }
   ]);
 
   const addZone = (zone) => {
@@ -51,133 +53,6 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
-
-  // Initial Data Fetch & WebSocket Setup
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const activeSOS = await fetchActiveSOS();
-        if (activeSOS.length > 0) {
-          const formattedAlerts = activeSOS.map(event => ({
-            id: event.id,
-            type: 'sos',
-            user: `User ${event.device_id}`,
-            avatar: '/avatars/male_2.png',
-            destination: 'Live Location',
-            device: event.device_id,
-            status: 'SOS ACTIVE',
-            position: [event.location_data?.[0]?.latitude || 30.6830, event.location_data?.[0]?.longitude || 76.6058],
-            details: {
-              pulse: event.pulse_data?.[0]?.bpm ? `${event.pulse_data[0].bpm} BPM` : 'N/A',
-              heartbeat: 'Just now',
-              speed: '1.2 km/h',
-              battery: '90%',
-              sensor: 'GPS Tracking'
-            },
-            team: {
-              status: 'DISPATCHED',
-              eta: '8 mins'
-            },
-            assigned: 'Amit Verma'
-          }));
-          setAlerts(formattedAlerts);
-        }
-      } catch (error) {
-        console.error("Failed to load active SOS:", error);
-      }
-    };
-
-    loadInitialData();
-
-    const ws = connectSOSWebSocket((data) => {
-      console.log("WebSocket Message Received:", data);
-
-      if (data.type === 'sos_alert' || data.type === 'telemetry_update' || data.type === 'pulse_alert') {
-        console.log("Triggering SOS/Telemetry Update UI...");
-        setActiveTab('alerts');
-
-        // Update global telemetry state for real-time display in Devices/Active User sections
-        if (data.device_id) {
-          setDeviceTelemetry(prev => ({
-            ...prev,
-            [data.device_id]: {
-              pulse: data.pulse,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              timestamp: data.timestamp || new Date().toISOString()
-            }
-          }));
-        }
-
-        setAlerts(prev => {
-          // Identify unique SOS card by event_id or device_id fallback
-          const uniqueId = data.event_id || data.device_id;
-          const existingIndex = prev.findIndex(a => (data.event_id && a.id === data.event_id) || (!data.event_id && a.device === data.device_id));
-
-          if (existingIndex !== -1) {
-            // Update existing SOS card
-            const updated = [...prev];
-            const item = {
-              ...updated[existingIndex],
-              position: data.latitude ? [data.latitude, data.longitude] : updated[existingIndex].position,
-              status: 'SOS ACTIVE',
-              details: {
-                ...updated[existingIndex].details,
-                pulse: data.pulse !== undefined ? `${data.pulse} BPM` : updated[existingIndex].details.pulse,
-                heartbeat: 'Just now',
-                battery: data.battery !== undefined ? `${data.battery}%` : updated[existingIndex].details.battery
-              }
-            };
-            // Move updated item to top
-            updated.splice(existingIndex, 1);
-            return [item, ...updated];
-          } else if (data.sos || data.type === 'sos_alert') {
-            // Create new SOS card
-            const newId = data.event_id || Date.now();
-            setSelectedAlertId(newId);
-            return [{
-              id: newId,
-              type: 'sos',
-              user: data.device_id === 'midway_panel' ? 'Midway Panel' : `User ${data.device_id}`,
-              avatar: data.device_id === 'midway_panel' ? '/avatars/male_1.png' : '/avatars/male_2.png',
-              device: data.device_id,
-              status: 'SOS ACTIVE',
-              position: data.latitude ? [data.latitude, data.longitude] : [30.6830, 76.6058],
-              details: {
-                pulse: data.pulse !== undefined ? `${data.pulse} BPM` : 'N/A',
-                heartbeat: 'Just now',
-                speed: data.device_id === 'midway_panel' ? null : '0.0 km/h',
-                battery: data.battery !== undefined ? `${data.battery}%` : '92%',
-                sensor: data.device_id === 'midway_panel' ? 'Control Gateway' : 'GPS Tracking'
-              },
-              team: { status: 'DISPATCHED', eta: '12 mins' },
-              assigned: 'Quick Response Team'
-            }, ...prev];
-          }
-          return prev;
-        });
-      } else if (data.type === 'checkpoint_reached') {
-        const newCheckpoint = {
-          id: Date.now(),
-          user: data.user_id || 'Unknown User',
-          location: data.device_id,
-          time: new Date().toLocaleTimeString()
-        };
-
-        setCheckpoints(prev => [newCheckpoint, ...prev]);
-
-        // Remove after 5 seconds
-        setTimeout(() => {
-          setCheckpoints(prev => prev.filter(cp => cp.id !== newCheckpoint.id));
-        }, 5000);
-      }
-    });
-
-
-    return () => {
-      ws.close();
-    };
-  }, []);
 
   // Global Zoom Blocker to prevent whole website from zooming
   useEffect(() => {

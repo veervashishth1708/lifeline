@@ -14,13 +14,10 @@ This document outlines the technologies used across the different layers of the 
 - **Styling:** Vanilla CSS (Modern CSS variables and animations)
 
 ## ⚙️ Backend (API & Processing)
-- **Language:** Python 3.x
-- **Framework:** [FastAPI](https://fastapi.tiangolo.com/) (High-performance ASGI framework)
-- **Database:** [PostgreSQL](https://www.postgresql.org/) (Structured data storage)
-- **ORM:** [SQLAlchemy](https://www.sqlalchemy.org/)
-- **Real-time Core:** [Redis](https://redis.io/) (Used for WebSocket message broadcasting and Pub/Sub)
-- **Data Validation:** [Pydantic](https://docs.pydantic.dev/)
-- **Web Server:** [Uvicorn](https://www.uvicorn.org/)
+- **Framework:** [Node.js / Express](https://expressjs.com/) (Extremely fast JSON/IoT event networking)
+- **Database:** [MongoDB](https://www.mongodb.com/) (NoSQL document storage, highly flexible schemas)
+- **ORM / Schema Definition:** [Mongoose](https://mongoosejs.com/) (Provides a structured table definition inside Python/js cleanly)
+- **Hardware Integration Layer:** Python `uvicorn` instance safely legacy-available but effectively replaced by Express routing structure.
 
 ## 🔌 Hardware (Nodes & Midway Gateway)
 - **Microcontrollers:** ESP32 (WROOM/DevKit)
@@ -35,4 +32,3 @@ This document outlines the technologies used across the different layers of the 
 - **Protocol:** HTTP POST (JSON payloads) for telemetry ingestion.
 
 ## 🔄 Integrations
-- **Automation:** [n8n](https://n8n.io/) (External webhooks for emergency workflows)

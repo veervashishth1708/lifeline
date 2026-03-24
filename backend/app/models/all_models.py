@@ -1,63 +1,37 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, func
 from ..database import Base
+
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    role = Column(String, default="operator")
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    devices = relationship("Device", back_populates="owner")
 
-class Device(Base):
-    __tablename__ = "devices"
+class Signal(Base):
+    __tablename__ = "signals"
 
-    id = Column(String, primary_key=True, index=True) # Device Serial/ID
-    user_id = Column(Integer, ForeignKey("users.id"))
-    last_seen = Column(DateTime(timezone=True), onupdate=func.now())
-    sos_active = Column(Boolean, default=False)
-    last_pulse = Column(Integer, nullable=True)
-    last_lat = Column(Float, nullable=True)
-    last_lng = Column(Float, nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(String, index=True, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    pulse = Column(Integer, nullable=True)
+    battery = Column(Integer, nullable=True)
+    sos = Column(Boolean, nullable=False, default=False)
+    received_at = Column(DateTime(timezone=True), server_default=func.now(), index=True, nullable=False)
 
-    owner = relationship("User", back_populates="devices")
-    events = relationship("SOSEvent", back_populates="device")
-    pulse_history = relationship("PulseData", back_populates="device")
-    location_history = relationship("LocationData", back_populates="device")
 
 class SOSEvent(Base):
     __tablename__ = "sos_events"
 
     id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(String, ForeignKey("devices.id"))
-    start_time = Column(DateTime(timezone=True), server_default=func.now())
-    end_time = Column(DateTime(timezone=True), nullable=True)
-    status = Column(String, default="active") # active, resolved
-
-    device = relationship("Device", back_populates="events")
-
-class PulseData(Base):
-    __tablename__ = "pulse_data"
-
-    id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(String, ForeignKey("devices.id"))
-    bpm = Column(Integer)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
-    device = relationship("Device", back_populates="pulse_history")
-
-class LocationData(Base):
-    __tablename__ = "location_data"
-
-    id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(String, ForeignKey("devices.id"))
-    latitude = Column(Float)
-    longitude = Column(Float)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
-    device = relationship("Device", back_populates="location_history")
+    device_id = Column(String, index=True, nullable=False)
+    is_active = Column(Boolean, index=True, default=True, nullable=False)
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    last_latitude = Column(Float, nullable=False)
+    last_longitude = Column(Float, nullable=False)
+    last_pulse = Column(Integer, nullable=True)

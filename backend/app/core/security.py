@@ -25,50 +25,31 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-# AES Decryption for Midway/Nodes
 import base64
 import json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-def decrypt_aes_256_cbc(encrypted_base64: str) -> dict:
-    """
-    Decrypts AES-256-CBC encrypted string sent from ESP32.
-    Expects decrypted payload to be JSON.
-    """
+def decrypt_aes_256_cbc_raw(encrypted_base64: str, aes_key: str | None = None) -> str | None:
     try:
-        # Convert hex key/iv to bytes
-        key = bytes.fromhex(settings.AES_KEY)
+        key_hex = aes_key or settings.AES_KEY
+        if not key_hex or not settings.AES_IV:
+            return None
+        key = bytes.fromhex(key_hex)
         iv = bytes.fromhex(settings.AES_IV)
-        
-        # Decode base64 encrypted data
         encrypted_bytes = base64.b64decode(encrypted_base64)
-        
         cipher = AES.new(key, AES.MODE_CBC, iv)
         decrypted_bytes = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
-        
-        return json.loads(decrypted_bytes.decode('utf-8'))
-    except Exception as e:
-        print(f"Decryption Error: {e}")
+        return decrypted_bytes.decode("utf-8")
+    except Exception:
         return None
 
-def decrypt_aes_256_cbc_raw(encrypted_base64: str) -> str:
-    """
-    Decrypts AES-256-CBC encrypted string sent from ESP32.
-    Returns the raw string (e.g., "SOS" or "CP:...") instead of JSON data.
-    """
+
+def decrypt_aes_256_cbc_json(encrypted_base64: str, aes_key: str | None = None) -> dict | None:
+    decrypted = decrypt_aes_256_cbc_raw(encrypted_base64, aes_key=aes_key)
+    if not decrypted:
+        return None
     try:
-        # Convert hex key/iv to bytes
-        key = bytes.fromhex(settings.AES_KEY)
-        iv = bytes.fromhex(settings.AES_IV)
-        
-        # Decode base64 encrypted data
-        encrypted_bytes = base64.b64decode(encrypted_base64)
-        
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        decrypted_bytes = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
-        
-        return decrypted_bytes.decode('utf-8')
-    except Exception as e:
-        print(f"Raw Decryption Error: {e}")
+        return json.loads(decrypted)
+    except Exception:
         return None

@@ -11,7 +11,7 @@ const char *ssid = "Veer";
 const char *password = "veer1708";
 
 // Backend WebSocket URL
-const char *wsHost = "10.185.3.46";
+const char *wsHost = "10.124.177.46";
 const int wsPort = 8000;
 const char *wsPath = "/ws/sos";
 
