@@ -12,14 +12,14 @@ app.use(express.json());
 // ============================================
 // 📊 CONNECT TO MONGODB (LOCAL DIRECTORY)
 // ============================================
-mongoose.connect('mongodb://127.0.0.1:27017/lifeline', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log("Connected to MongoDB database 'lifeline'");
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://veervashishth170824_db_user:llV9U2w6zwBCeb6x@cluster0.dlh66jk.mongodb.net/lifeline?retryWrites=true&w=majority&appName=Cluster0';
+
+mongoose.connect(MONGODB_URI)
+.then(() => {
+    console.log("Connected to MongoDB Atlas database 'lifeline'");
 }).catch((err) => {
     console.error("MongoDB Connection Error:", err.message);
-    console.log("Make sure you have MongoDB Community Server installed and running!");
+    console.log("Make sure your MongoDB Atlas URI and network access are configured correctly!");
 });
 
 // 🌐 BACKEND API ROUTE

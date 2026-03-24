@@ -40,22 +40,22 @@ def post_telemetry(base, device_id, lat, lon, pulse, battery, sos):
         "battery": battery,
         "sos": sos,
     }
-    r = requests.post(url, headers=headers, json=body, timeout=5)
+    r = requests.post(url, headers=headers, json=body, timeout=15)
     return r.status_code, r.json()
 
 
 def get_active_sos(base):
-    r = requests.get(f"{base}/api/v1/sos/active", timeout=5)
+    r = requests.get(f"{base}/api/v1/sos/active", timeout=15)
     return r.status_code, r.json()
 
 
 def get_devices_status(base):
-    r = requests.get(f"{base}/api/v1/devices/status", timeout=5)
+    r = requests.get(f"{base}/api/v1/devices/status", timeout=15)
     return r.status_code, r.json()
 
 
 def resolve_sos(base, event_id):
-    r = requests.post(f"{base}/api/v1/sos/resolve/{event_id}", timeout=5)
+    r = requests.post(f"{base}/api/v1/sos/resolve/{event_id}", timeout=15)
     return r.status_code, r.json()
 
 
@@ -94,7 +94,7 @@ def run_tests(base):
     # ── 1. Health check ──
     print("\n[1] Health Check")
     try:
-        r = requests.get(f"{base}/", timeout=5)
+        r = requests.get(f"{base}/", timeout=15)
         if r.status_code == 200 and "Life Link" in r.json().get("message", ""):
             t.ok("Root endpoint returns 200")
         else:
@@ -109,7 +109,7 @@ def run_tests(base):
             f"{base}/api/v1/telemetry",
             headers={"X-Device-Key": "WRONG_KEY", "Content-Type": "application/json"},
             json={"device_id": "Test", "latitude": 29.0, "longitude": 77.0, "sos": False},
-            timeout=5,
+            timeout=15,
         )
         if r.status_code == 401:
             t.ok("Bad device key rejected (401)")
