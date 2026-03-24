@@ -24,4 +24,4 @@ app.include_router(websocket_routes.router, tags=["websocket"])
 
 @app.get("/")
 async def root():
-    return {"message": "Life Link FastAPI backend is running with MongoDB", "api_prefix": settings.API_V1_STR}
+    return {"message": "Life Link FastAPI backend is running", "api_prefix": settings.API_V1_STR}
