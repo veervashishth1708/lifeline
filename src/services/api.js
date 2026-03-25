@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api/v1`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://lifeline-production-1041.up.railway.app/api/v1';
 export const fetchActiveSOS = async () => {
     const response = await fetch(`${API_BASE_URL}/sos/active`);
     if (!response.ok) throw new Error('Failed to fetch active SOS events');

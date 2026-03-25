@@ -10,7 +10,7 @@ const UsersPanel = ({ onClose }) => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/users');
+            const response = await fetch('https://lifeline-production-1041.up.railway.app/api/users');
             const data = await response.json();
             setUsers(data);
         } catch (error) {

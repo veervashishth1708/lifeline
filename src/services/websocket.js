@@ -1,4 +1,4 @@
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000/ws`;
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'wss://lifeline-production-1041.up.railway.app/ws';
 
 export const connectSOSWebSocket = (onMessage) => {
     const socket = new WebSocket(`${WS_BASE_URL}/sos`);
