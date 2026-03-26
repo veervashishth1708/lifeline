@@ -2,6 +2,7 @@
 #include <Adafruit_SSD1306.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <Wire.h>
 #include <time.h>
 
@@ -9,8 +10,8 @@
 const char *ssid = "Veer";
 const char *password = "veer1708";
 
-// Backend URL & API Key
-const char *backendURL = "http://10.185.3.46:8000/api/v1/telemetry";
+// Backend Production URL (Railway)
+const char *backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry";
 const char *deviceApiKey = "antigravity_secret_123";
 
 // ================= OLED SETTINGS =================
@@ -142,8 +143,10 @@ int getRealPulse() {
 
 void sendTelemetry(bool sos) {
   if (WiFi.status() == WL_CONNECTED) {
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient http;
-    http.begin(backendURL);
+    http.begin(client, backendURL);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("X-Device-Key", deviceApiKey);
 

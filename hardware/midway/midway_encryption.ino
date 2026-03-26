@@ -5,14 +5,15 @@
 #include <LoRa.h>
 #include <SPI.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <Wire.h>
 
 // ================= WIFI =================
 const char *ssid = "Veer";
 const char *password = "veer1708";
 
-// Backend SECURE endpoint
-const char *backendURL = "http://192.168.1.44:8000/api/v1/telemetry/secure";
+// Backend SECURE endpoint (Railway Production)
+const char *backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry/secure";
 const char *deviceApiKey = "antigravity_secret_123";
 
 // ================= LoRa Pins =================
@@ -157,8 +158,10 @@ void loop() {
     display.display();
 
     if (WiFi.status() == WL_CONNECTED) {
+      WiFiClientSecure client;
+      client.setInsecure(); // Skip certificate verification
       HTTPClient http;
-      http.begin(backendURL);
+      http.begin(client, backendURL);
       http.addHeader("Content-Type", "application/json");
       http.addHeader("X-Device-Key", deviceApiKey);
 

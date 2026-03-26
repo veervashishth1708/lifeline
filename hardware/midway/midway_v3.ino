@@ -2,6 +2,7 @@
 #include <LoRa.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -23,7 +24,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 const char* ssid = "Veer";
 const char* password = "veer1708";
-const char* backendURL = "http://10.X.X.X:3000/api/secure_telemetry"; // Update to match Node.js ip
+const char* backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry/secure"; // Railway Production
 
 void setup() {
     Serial.begin(115200);
@@ -107,8 +108,10 @@ void loop() {
                 String jsonPost = "{\"src\":\"" + srcId + "\",\"midway_token\":\"" + midEnc + "\"}";
 
                 if (WiFi.status() == WL_CONNECTED) {
+                    WiFiClientSecure client;
+                    client.setInsecure();
                     HTTPClient http;
-                    http.begin(backendURL);
+                    http.begin(client, backendURL);
                     http.addHeader("Content-Type", "application/json");
 
                     int code = http.POST(jsonPost);

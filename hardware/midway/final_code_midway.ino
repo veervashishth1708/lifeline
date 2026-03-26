@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -8,15 +9,12 @@
 #include "mbedtls/aes.h"
 #include <ArduinoJson.h>
 
-#include <WiFiUdp.h>
-
 // ================= CONFIG =================
 const char* ssid = "WIFI_SSID";
 const char* password = "WIFI_PASSWORD";
 
-WiFiUDP udp;
-String backend_ip = "";
-String dynamic_backend_url = "";
+// Backend Production URL (Railway)
+const char* backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry";
 
 unsigned char midway_key[32] = {'M','I','D','W','A','Y','K','E','Y','A','E','S','1','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F','1','2','3','4'};
 unsigned char aes_iv[16]     = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
@@ -167,7 +165,7 @@ bool parseDecryptedPayload(String origId, String decryptedPayload, float &lat, f
 }
 
 void forwardToBackend(String origId, String decryptedPayload) {
-  if(WiFi.status() != WL_CONNECTED || dynamic_backend_url == "") return;
+  if(WiFi.status() != WL_CONNECTED) return;
 
   float lat = 0.0;
   float lon = 0.0;
@@ -179,8 +177,10 @@ void forwardToBackend(String origId, String decryptedPayload) {
     return;
   }
 
+  WiFiClientSecure client;
+  client.setInsecure(); // Skip certificate verification for Railway HTTPS
   HTTPClient http;
-  http.begin(dynamic_backend_url);
+  http.begin(client, backendURL);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("x-device-key", DEVICE_API_KEY);
 
@@ -222,32 +222,10 @@ void setup() {
   digitalWrite(LED_GREEN, HIGH); 
   display.println("WIFI CONNECTED"); display.display();
   
-  // Dynamic IP Discovery via UDP
-  udp.begin(5005);
   display.clearDisplay(); display.setCursor(0,0);
-  display.println("WAITING FOR BACKEND IP..."); display.display();
-
-  while(backend_ip == "") {
-    int packetSize = udp.parsePacket();
-    if (packetSize) {
-      char incomingPacket[255];
-      int len = udp.read(incomingPacket, 255);
-      if (len > 0) incomingPacket[len] = 0;
-      
-      String msg = String(incomingPacket);
-      if (msg.startsWith("LIFE_LINK_IP:")) {
-        backend_ip = msg.substring(13);
-        backend_ip.trim();
-        dynamic_backend_url = "http://" + backend_ip + ":8000/api/v1/telemetry";
-        Serial.println("Found backend at: " + backend_ip);
-        display.clearDisplay(); display.setCursor(0,0);
-        display.println("FOUND SERVER:");
-        display.println(backend_ip); display.display();
-      }
-    }
-    digitalWrite(LED_YELLOW, (millis() / 200) % 2); // blink Yellow while scanning
-    delay(10);
-  }
+  display.println("BACKEND: Railway");
+  display.println("Production Mode"); display.display();
+  Serial.println("Backend: " + String(backendURL));
   digitalWrite(LED_YELLOW, HIGH); 
   delay(1000);
 
@@ -291,10 +269,8 @@ void loop() {
           String decrypted = decryptHex(hexData, targetKey);
           Serial.println("Decrypted: " + decrypted);
 
-          if(decrypted.indexOf("RNR") >= 0 || decrypted.indexOf("BPM:") >= 0) {
-              if (decrypted.indexOf("RNR:1") >= 0 || decrypted == "RNR") {
-                 redLedOffTime = millis() + 2000;
-              }
+          if(decrypted.indexOf("RNR:1") >= 0 || decrypted == "RNR") {
+              redLedOffTime = millis() + 5000;
           }
 
           display.clearDisplay(); display.setCursor(0,0);

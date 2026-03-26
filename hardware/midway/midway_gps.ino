@@ -2,6 +2,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <LoRa.h>
 #include <SPI.h>
 #include <WiFi.h>
@@ -11,8 +12,8 @@
 const char *ssid = "Veer";
 const char *password = "veer1708";
 
-// Backend SECURE endpoint
-const char *backendURL = "http://10.124.177.46:8000/api/v1/telemetry/secure";
+// Backend SECURE endpoint (Railway Production)
+const char *backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry/secure";
 const char *deviceApiKey = "antigravity_secret_123";
 
 
@@ -160,8 +161,10 @@ void loop() {
     display.display();
 
     if (WiFi.status() == WL_CONNECTED) {
+      WiFiClientSecure client;
+      client.setInsecure();
       HTTPClient http;
-      http.begin(backendURL);
+      http.begin(client, backendURL);
       http.addHeader("Content-Type", "application/json");
       http.addHeader("X-Device-Key", deviceApiKey);
 
