@@ -10,8 +10,8 @@
 #include <ArduinoJson.h>
 
 // ================= CONFIG =================
-const char* ssid = "WIFI_SSID";
-const char* password = "WIFI_PASSWORD";
+const char* ssid = "veer";
+const char* password = "veer1708";
 
 // Backend Production URL (Railway)
 const char* backendURL = "https://lifeline-production-1041.up.railway.app/api/v1/telemetry";
