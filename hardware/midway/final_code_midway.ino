@@ -125,9 +125,9 @@ bool parseDecryptedPayload(String origId, String decryptedPayload, float &lat, f
   pulse = 75;
   sos = false;
 
-  if (origId == "Node-A") { lat = 29.211372; lon = 77.017304; }
-  else if (origId == "Node-B") { lat = 29.210347; lon = 77.015948; }
-  else if (origId == "Node-C") { lat = 29.211414; lon = 77.016054; }
+  if (origId == "Node-A") { lat = 30.268841; lon = 77.993322; }
+  else if (origId == "Node-B") { lat = 30.268841; lon = 77.993322; }
+  else if (origId == "Node-C") { lat = 30.270905; lon = 77.993004; }
 
   if (decryptedPayload.startsWith("RNR")) {
     sos = true;

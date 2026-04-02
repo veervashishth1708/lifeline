@@ -67,9 +67,9 @@ struct NodeData {
   float lon;
 };
 
-NodeData nodes[] = {{"Node-A", 29.211372, 77.017304},
-                    {"Node-B", 29.210347, 77.015948},
-                    {"Node-C", 29.21141446472551, 77.01605426676902}};
+NodeData nodes[] = {{"Node-A", 30.268841, 77.993322},
+                    {"Node-B", 30.268841, 77.993322},
+                    {"Node-C", 30.270905, 77.993004}};
 
 void sendSOSToBackend(const char *nodeID, float lat, float lon,
                       bool isSOS = true, const char *userID = "") {

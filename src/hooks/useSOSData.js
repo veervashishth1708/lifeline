@@ -46,7 +46,7 @@ export const useSOSData = () => {
             destination: 'Live Location',
             device: event.device_id,
             status: 'SOS ACTIVE',
-            position: [event.location_data?.[0]?.latitude || 29.210347, event.location_data?.[0]?.longitude || 77.015948],
+            position: [event.location_data?.[0]?.latitude || 30.268423, event.location_data?.[0]?.longitude || 77.993792],
             details: {
               pulse: event.pulse_data?.[0]?.bpm ? `${event.pulse_data[0].bpm} BPM` : 'N/A',
               heartbeat: 'Just now',
@@ -111,7 +111,7 @@ export const useSOSData = () => {
             destination: 'Live Location',
             device: event.device_id,
             status: 'SOS ACTIVE',
-            position: [event.location_data?.[0]?.latitude || 29.210347, event.location_data?.[0]?.longitude || 77.015948],
+            position: [event.location_data?.[0]?.latitude || 30.268423, event.location_data?.[0]?.longitude || 77.993792],
             details: {
               pulse: event.pulse_data?.[0]?.bpm ? `${event.pulse_data[0].bpm} BPM` : 'N/A',
               heartbeat: 'Just now',
@@ -184,7 +184,7 @@ export const useSOSData = () => {
                 avatar: data.device_id === 'midway_panel' ? '/avatars/male_1.png' : '/avatars/male_2.png',
                 device: data.device_id,
                 status: 'SOS ACTIVE',
-                position: data.latitude ? [data.latitude, data.longitude] : [29.210347, 77.015948],
+                position: data.latitude ? [data.latitude, data.longitude] : [30.268423, 77.993792],
                 details: {
                   pulse: data.pulse !== undefined ? `${data.pulse} BPM` : 'N/A',
                   heartbeat: 'Just now',
