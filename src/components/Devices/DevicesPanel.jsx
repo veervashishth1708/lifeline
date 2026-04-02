@@ -19,21 +19,22 @@ const DevicesPanel = ({ onClose, deviceTelemetry = {} }) => {
                 const now = new Date();
                 const diffMinutes = lastSeenDate ? (now - lastSeenDate) / 1000 / 60 : Infinity;
 
+                // Use backend is_online as primary, fallback to local calculation
                 let connectivityStatus = 'Offline';
-                if (diffMinutes < 5) connectivityStatus = 'Online';
+                if (device.is_online || diffMinutes < 5) connectivityStatus = 'Online';
                 else if (diffMinutes < 60) connectivityStatus = 'Idle';
 
                 return {
-                    id: device.id,
-                    name: device.id === 'midway_panel' ? 'Midway Gateway' : 'SOS Tracker',
+                    id: device.device_id,
+                    name: device.device_id === 'midway_panel' ? 'Midway Gateway' : 'SOS Tracker',
                     user: 'Registered Node',
                     battery: '90%', // Default as backend doesn't store battery yet
                     status: device.sos_active ? 'SOS ACTIVE' : connectivityStatus,
                     signal: connectivityStatus === 'Online' ? 'Strong' : 'None',
                     lastSeen: lastSeenDate ? lastSeenDate.toLocaleTimeString() : 'Never',
                     pulse: device.last_pulse || 0,
-                    lat: device.last_lat,
-                    lng: device.last_lng
+                    lat: device.last_latitude,
+                    lng: device.last_longitude
                 };
             });
             setDevices(formattedDevices);
