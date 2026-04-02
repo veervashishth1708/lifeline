@@ -14,8 +14,9 @@ export const connectSOSWebSocket = (onMessage) => {
 
     socket.onclose = () => {
         console.log('Disconnected from SOS WebSocket');
-        // Auto-reconnect after 3 seconds
-        setTimeout(() => connectSOSWebSocket(onMessage), 3000);
+        // Reconnect is managed by useSOSData hook with polling fallback
+        // Auto-reconnect after 5 seconds
+        setTimeout(() => connectSOSWebSocket(onMessage), 5000);
     };
 
     socket.onerror = (error) => {
