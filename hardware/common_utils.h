@@ -2,6 +2,8 @@
 #define COMMON_UTILS_H
 
 #include <Arduino.h>
+#include <stdint.h>
+#include <string.h>
 #include "mbedtls/aes.h"
 #include "mbedtls/base64.h"
 

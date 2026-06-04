@@ -4,12 +4,13 @@
 #include <MFRC522.h>
 #include <SPI.h>
 #include <Wire.h>
-#include "mbedtls/aes.h"
+#include "mbedtls/gcm.h"
+#include <esp_system.h>
 
 // ================= DEVICE & MESH CONFIG =================
 const char *NODE_ID = "Node-A";
 unsigned char aes_key[32] = {'N','O','D','E','A','K','E','Y','A','E','S','1','2','3','4','5','6','7','8','9','0','A','B','C','D','E','F','1','2','3','4','5'};
-unsigned char aes_iv[16]  = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+// Binary: 01001110 01001111 01000100 01000101 01000001 01001011 01000101 01011001 01000001 01000101 01010011 00110001 00110010 00110011 00110100 00110101 00110110 00110111 00111000 00111001 00110000 01000001 01000010 01000011 01000100 01000101 01000110 00110001 00110010 00110011 00110100 00110101
 
 // Mesh loop prevention
 String recentMsgIDs[15];
@@ -50,38 +51,57 @@ void forwardMeshPacket(String packet) {
   LoRa.endPacket();
 }
 
-String encryptToHex(String message) {
-  int input_len = message.length();
-  int padded_len = ((input_len / 16) + 1) * 16;
-  unsigned char input[padded_len];
-  uint8_t output[padded_len];
-  memset(input, 0, padded_len);
-  memcpy(input, message.c_str(), input_len);
-  uint8_t pad_val = padded_len - input_len;
-  for (int i = input_len; i < padded_len; i++) input[i] = pad_val;
+String byteToHex(uint8_t b) {
+  String hexStr = String(b, HEX);
+  if(hexStr.length() < 2) hexStr = "0" + hexStr;
+  return hexStr;
+}
 
-  unsigned char iv_copy[16];
-  memcpy(iv_copy, aes_iv, 16);
-
-  mbedtls_aes_context aes;
-  mbedtls_aes_init(&aes);
-  mbedtls_aes_setkey_enc(&aes, aes_key, 256);
-  mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_ENCRYPT, padded_len, iv_copy, input, output);
-  mbedtls_aes_free(&aes);
-
+String bytesToHex(uint8_t* bytes, size_t len) {
   String hexStr = "";
-  for(int i=0; i<padded_len; i++) {
-    if(output[i] < 0x10) hexStr += "0";
-    hexStr += String(output[i], HEX);
+  for(size_t i = 0; i < len; i++) {
+    hexStr += byteToHex(bytes[i]);
   }
   return hexStr;
 }
 
 void generateOrigPacketAndSend(String payload) {
-  String mid = "M" + String(random(10000, 99999));
-  addMsgSeen(mid);
-  String hexStr = encryptToHex(payload);
-  String packet = mid + ":" + String(NODE_ID) + ":" + hexStr;
+  uint8_t nonceBytes[8];
+  esp_fill_random(nonceBytes, sizeof(nonceBytes));
+  String nonceStr = bytesToHex(nonceBytes, sizeof(nonceBytes));
+  nonceStr.toUpperCase();
+  
+  addMsgSeen(nonceStr);
+
+  uint8_t ivBytes[12];
+  esp_fill_random(ivBytes, sizeof(ivBytes));
+  String ivStr = bytesToHex(ivBytes, sizeof(ivBytes));
+  ivStr.toUpperCase();
+
+  String plaintext = nonceStr + "|" + String(millis()) + "|" + payload;
+  
+  int input_len = plaintext.length();
+  unsigned char* input = (unsigned char*)plaintext.c_str();
+  uint8_t output[input_len];
+  uint8_t tag[16];
+
+  mbedtls_gcm_context gcm;
+  mbedtls_gcm_init(&gcm);
+  mbedtls_gcm_setkey(&gcm, MBEDTLS_CIPHER_ID_AES, aes_key, 256);
+  
+  mbedtls_gcm_crypt_and_tag(&gcm, MBEDTLS_GCM_ENCRYPT, input_len,
+                            ivBytes, sizeof(ivBytes),
+                            NULL, 0,
+                            input, output,
+                            sizeof(tag), tag);
+  mbedtls_gcm_free(&gcm);
+
+  String cipherStr = bytesToHex(output, input_len);
+  cipherStr.toUpperCase();
+  String tagStr = bytesToHex(tag, sizeof(tag));
+  tagStr.toUpperCase();
+
+  String packet = nonceStr + ":" + String(NODE_ID) + ":" + ivStr + ":" + cipherStr + ":" + tagStr;
   Serial.println("Originated: " + packet);
   
   display.clearDisplay(); display.setCursor(0,0);

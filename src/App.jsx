@@ -115,7 +115,7 @@ function App() {
             zones={zones}
             onAddZone={addZone}
           />
-          <SearchHeader mapType={mapType} onMapTypeChange={setMapType} />
+          <SearchHeader mapType={mapType} onMapTypeChange={setMapType} deviceTelemetry={deviceTelemetry} />
           {selectedAlert && (
             <DispatchPanel
               alert={selectedAlert}
